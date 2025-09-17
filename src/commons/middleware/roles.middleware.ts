@@ -18,6 +18,6 @@ export const requireRole = (allowedRoles: string[]) => {
 
 // Roles específicos como funciones
 export const requireOwner = requireRole(['owner']);
-export const requireAdmin = requireRole(['admin']);
-export const requireEditor = requireRole(['admin', 'editor']);
-export const requireMember = requireRole(['admin', 'editor', 'member']);
+export const requireAdmin = requireRole(['owner', 'admin']);
+export const requireEditor = requireRole(['owner', 'admin', 'editor']);
+export const requireMember = requireRole(['owner', 'admin', 'editor', 'member']);

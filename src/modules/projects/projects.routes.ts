@@ -21,4 +21,5 @@ projectsRotuer.get('/details/:id', [requireAuth, requireOrganization, requireMem
 projectsRotuer.delete('/:id', [requireAuth, requireOrganization, requireOwner], catchErrors(deleteProject));
 projectsRotuer.post('/undo/:id', [requireAuth, requireOrganization, requireOwner], catchErrors(undoProject));
 //TODO: Para buscar, para tener paginacion, para poder restaurar, tener capacidad  de archivar o desarchivar, invitar miembros?, favoritos, etc
+
 export default projectsRotuer;

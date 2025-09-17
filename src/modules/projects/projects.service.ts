@@ -50,10 +50,16 @@ export class ProjectService {
       where: { id, isDeleted: false },
       include: {
         columns: {
+          where: {
+            isDeleted: false,
+          },
           select: {
             id: true,
             name: true,
             order: true,
+          },
+          orderBy: {
+            order: 'asc',
           },
         },
         organization: {
