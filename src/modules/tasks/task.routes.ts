@@ -1,6 +1,8 @@
 import { Router } from 'express';
 import { requireAuth } from 'src/commons/middleware/auth.middleware.js';
 import { requireOrganization } from 'src/commons/middleware/organization.middleware.js';
+import { requireAdmin, requireMember } from 'src/commons/middleware/roles.middleware.js';
+import { catchErrors } from 'src/commons/utils/catchError.js';
 import * as taskController from './tasks.controller.js';
 const taskRouter = Router();
 
@@ -28,6 +30,31 @@ const taskRouter = Router();
  *       500:
  *         description: Internal server error
  */
-taskRouter.get('/', [requireAuth, requireOrganization], taskController.getTasks);
+taskRouter.get(
+  '/project/:projectId',
+  [requireAuth, requireOrganization, requireMember],
+  catchErrors(taskController.getAllTasksByProject),
+);
+
+taskRouter.post('/', [requireAuth, requireOrganization, requireMember], catchErrors(taskController.createdTasks));
+taskRouter.get('/:id', [requireAuth, requireOrganization, requireMember], catchErrors(taskController.getTask));
+taskRouter.put('/:id', [requireAuth, requireOrganization, requireMember], catchErrors(taskController.updateTasks));
+taskRouter.delete('/:id', [requireAuth, requireOrganization, requireAdmin], catchErrors(taskController.deleteTask));
+taskRouter.post(
+  '/:id/restored',
+  [requireAuth, requireOrganization, requireMember],
+  catchErrors(taskController.restoredTask),
+);
+taskRouter.patch('/:id/move', [requireAuth, requireOrganization], catchErrors(taskController.moveTaskColumn));
+taskRouter.post(
+  '/:id/comments',
+  [requireAuth, requireOrganization, requireMember],
+  catchErrors(taskController.addComment),
+);
+taskRouter.delete(
+  '/comments/:id',
+  [requireAuth, requireOrganization, requireAdmin],
+  catchErrors(taskController.deleteComment),
+);
 
 export default taskRouter;
