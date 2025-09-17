@@ -1,7 +1,7 @@
 import { apiReference } from '@scalar/express-api-reference';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import express from 'express';
+import express, { Request, Response } from 'express';
 import { createServer } from 'http';
 import { pinoHttp } from 'pino-http';
 import mainRouter from 'src/routes/api.js';
@@ -57,11 +57,21 @@ app.use(
 );
 
 // 🛑 Error handler (siempre al final)
-app.use((err: unknown, req: express.Request, res: express.Response) => {
-  const statusCode = 500;
-  const message = (err as Error).message || 'An unexpected error occurred';
-  res.status(statusCode).json({ error: message });
-});
+app.use(
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  (err: any, req: Request, res: Response, next: express.NextFunction) => {
+    console.info('✅ Middleware de error ejecutado');
+    const status = err.statusCode || 500;
+    const message = err.message || 'Internal Server Error';
+
+    res.status(status).json({
+      error: message,
+      statusCode: status,
+      name: err.name || 'Error',
+      details: err.details || null,
+    });
+  },
+);
 
 // 🚀 Server start
 server.listen(3000, () => {

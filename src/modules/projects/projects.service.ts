@@ -1,4 +1,5 @@
 import { prisma } from '@lib/prisma.js';
+import { CreateError } from 'src/commons/utils/exceptions.js';
 
 export class ProjectService {
   static async addNewProject({
@@ -19,6 +20,93 @@ export class ProjectService {
     });
     await this.seedProjectData(project.id);
     return project;
+  }
+
+  static async getProjects({ organizationId }: { organizationId: string }) {
+    return await prisma.project.findMany({
+      where: { organizationId, isDeleted: false },
+      omit: {
+        isDeleted: true,
+      },
+    });
+  }
+  static async update(id: string, { name, description }: { name: string; description: string }) {
+    const findProject = await prisma.project.findUnique({ where: { id } });
+    if (!findProject) {
+      throw CreateError.badRequest('Project not exists.');
+    }
+
+    const newProject = await prisma.project.update({
+      where: { id },
+      data: { name, description },
+      omit: {
+        isDeleted: true,
+      },
+    });
+    return newProject;
+  }
+  static async getProjectDetails({ id }: { id: string }) {
+    const data = await prisma.project.findUnique({
+      where: { id, isDeleted: false },
+      include: {
+        columns: {
+          select: {
+            id: true,
+            name: true,
+            order: true,
+          },
+        },
+        organization: {
+          include: {
+            members: {
+              select: {
+                role: true,
+                user: {
+                  select: {
+                    id: true,
+                    name: true,
+                    email: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+    if (!data) {
+      throw CreateError.badRequest('Project not exists.');
+    }
+    return {
+      id: data.id,
+      name: data.name,
+      description: data.description,
+      organizationId: data.organizationId,
+      createdAt: data.createdAt,
+      updatedAt: data.updatedAt,
+      columns: data.columns,
+      members: data.organization.members.map((member) => ({
+        ...member.user,
+        role: member.role,
+      })),
+    };
+  }
+
+  static async deleteProject(id: string) {
+    const findProject = await prisma.project.findUnique({ where: { id } });
+    if (findProject) {
+      await prisma.project.update({ where: { id }, data: { isDeleted: true } });
+    } else {
+      throw CreateError.badRequest('Project not exists.');
+    }
+  }
+  static async undoProject(id: string) {
+    const findProject = await prisma.project.findUnique({ where: { id } });
+    if (findProject) {
+      await prisma.project.update({ where: { id }, data: { isDeleted: false } });
+    } else {
+      throw CreateError.badRequest('Project not exists.');
+    }
   }
 
   protected static async seedProjectData(projectId: string) {
