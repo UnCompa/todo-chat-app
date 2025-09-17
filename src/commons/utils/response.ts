@@ -6,7 +6,7 @@ type Pagination = {
 
 export class ResponseBuilder {
   private statusCode: number = 200;
-  private message: string = "Operación exitosa";
+  private message: string = 'Operación exitosa';
   private data: any = null;
   private pagination?: Pagination;
 

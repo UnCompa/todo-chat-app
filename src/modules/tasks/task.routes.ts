@@ -1,8 +1,8 @@
-import { Router } from "express";
-import { requireAuth } from "src/commons/middleware/auth.middleware.js";
-import { requireOrganization } from "src/commons/middleware/organization.middleware.js";
-import * as taskController from "./tasks.controller.js";
-const taskRouter = Router()
+import { Router } from 'express';
+import { requireAuth } from 'src/commons/middleware/auth.middleware.js';
+import { requireOrganization } from 'src/commons/middleware/organization.middleware.js';
+import * as taskController from './tasks.controller.js';
+const taskRouter = Router();
 
 /**
  * @openapi
@@ -29,6 +29,5 @@ const taskRouter = Router()
  *         description: Internal server error
  */
 taskRouter.get('/', [requireAuth, requireOrganization], taskController.getTasks);
-
 
 export default taskRouter;

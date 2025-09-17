@@ -17,7 +17,7 @@ export const swaggerOptions = {
         SessionCookie: {
           type: 'apiKey',
           in: 'cookie',
-          name: 'better-auth.session_token'
+          name: 'better-auth.session_token',
         },
       },
       schemas: {
@@ -29,11 +29,10 @@ export const swaggerOptions = {
             description: { type: 'string' },
             completed: { type: 'boolean' },
           },
-          required: ['id', 'title', 'completed']
-        }
-      }
-    }
-
+          required: ['id', 'title', 'completed'],
+        },
+      },
+    },
   },
   apis: ['./src/modules/**/*.routes.ts', './src/modules/**/*.controller.ts'], // rutas a tus archivos
 };

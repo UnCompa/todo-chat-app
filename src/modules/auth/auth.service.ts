@@ -15,23 +15,27 @@ export const getActiveOrganization = async (userId: string) => {
     where: {
       members: {
         some: {
-          userId: userId
-        }
-      }
+          userId: userId,
+        },
+      },
     },
   });
   return organization;
-}
+};
 
-export const sendOrganizationInvitation = async (
-  {
-    email,
-    invitedByUsername,
-    invitedByEmail,
-    teamName,
-    inviteLink,
-  }: { email: string; invitedByUsername: string; invitedByEmail: string; teamName: string; inviteLink: string }
-) => {
+export const sendOrganizationInvitation = async ({
+  email,
+  invitedByUsername,
+  invitedByEmail,
+  teamName,
+  inviteLink,
+}: {
+  email: string;
+  invitedByUsername: string;
+  invitedByEmail: string;
+  teamName: string;
+  inviteLink: string;
+}) => {
   const templatePath = path.resolve(__dirname, '../../lib/emails/templates/sendInvitationOrganization.hbs');
 
   const source = fs.readFileSync(templatePath, 'utf8');
@@ -47,5 +51,5 @@ export const sendOrganizationInvitation = async (
 
   const service = new EmailService(new ResendAdapter(Env.RESEND_API_KEY));
 
-  await service.send(email, `Invitación a ${teamName} - Saberium`, html)
-}
+  await service.send(email, `Invitación a ${teamName} - Saberium`, html);
+};

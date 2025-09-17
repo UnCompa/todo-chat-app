@@ -1,6 +1,6 @@
 // email.service.ts
 
-import { EmailAdapter } from "./email.interface.js";
+import { EmailAdapter } from './email.interface.js';
 
 export class EmailService {
   private adapter: EmailAdapter;

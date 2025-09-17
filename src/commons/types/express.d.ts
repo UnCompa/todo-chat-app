@@ -1,4 +1,4 @@
-import { Organization, Project } from "../../generated/prisma";
+import { Organization, Project } from '../../generated/prisma';
 
 declare global {
   namespace Express {
@@ -11,7 +11,7 @@ declare global {
       session?: {
         id: string;
         userId: string;
-        activeOrganizationId?: string | null | undefined
+        activeOrganizationId?: string | null | undefined;
       };
       organization?: Organization;
       project?: Project;

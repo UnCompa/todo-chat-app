@@ -1,4 +1,4 @@
-import { PrismaClient } from "src/generated/prisma/index.js";
+import { PrismaClient } from 'src/generated/prisma/index.js';
 
 declare global {
   // Evitamos que Prisma cree múltiples instancias en dev (hot reload)
@@ -8,7 +8,7 @@ declare global {
 export const prisma =
   global.prisma ||
   new PrismaClient({
-    log: ["query", "error", "warn"], // opcional para debug
+    log: ['query', 'error', 'warn'], // opcional para debug
   });
 
-if (process.env.NODE_ENV !== "production") global.prisma = prisma;
+if (process.env.NODE_ENV !== 'production') global.prisma = prisma;

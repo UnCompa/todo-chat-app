@@ -1,23 +1,22 @@
-import { betterAuth } from "better-auth";
-import { prismaAdapter } from "better-auth/adapters/prisma";
-import { openAPI, organization } from "better-auth/plugins";
-import { Env } from "src/commons/config/envs.config.js";
-import { PrismaClient } from "src/generated/prisma/index.js";
-import { getActiveOrganization, sendOrganizationInvitation } from "./auth.service.js";
-import { ac, admin, member, owner } from "./permissions.js";
+import { betterAuth } from 'better-auth';
+import { prismaAdapter } from 'better-auth/adapters/prisma';
+import { openAPI, organization } from 'better-auth/plugins';
+import { Env } from 'src/commons/config/envs.config.js';
+import { PrismaClient } from 'src/generated/prisma/index.js';
+import { getActiveOrganization, sendOrganizationInvitation } from './auth.service.js';
+import { ac, admin, member, owner } from './permissions.js';
 
 const prisma = new PrismaClient();
 
-
 export const auth = betterAuth({
   database: prismaAdapter(prisma, {
-    provider: "postgresql",
+    provider: 'postgresql',
   }),
   databaseHooks: {
     session: {
       create: {
         before: async (session) => {
-          const organization = await getActiveOrganization(session.userId) || { id: null };
+          const organization = (await getActiveOrganization(session.userId)) || { id: null };
           return {
             data: {
               ...session,
@@ -29,7 +28,7 @@ export const auth = betterAuth({
     },
   },
   emailAndPassword: {
-    enabled: true
+    enabled: true,
   },
   plugins: [
     organization({
@@ -49,9 +48,9 @@ export const auth = betterAuth({
       roles: {
         owner,
         admin,
-        member
-      }
+        member,
+      },
     }),
-    openAPI()
-  ]
-})
+    openAPI(),
+  ],
+});

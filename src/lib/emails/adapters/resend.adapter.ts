@@ -1,6 +1,6 @@
 // adapters/resend.adapter.ts
-import { Resend } from "resend";
-import { EmailAdapter } from "../email.interface.js";
+import { Resend } from 'resend';
+import { EmailAdapter } from '../email.interface.js';
 
 export class ResendAdapter implements EmailAdapter {
   private resend: Resend;
@@ -10,13 +10,13 @@ export class ResendAdapter implements EmailAdapter {
   }
 
   async sendEmail(to: string, subject: string, body: string): Promise<void> {
-    console.info(`Enviando email a ${to}`)
+    console.info(`Enviando email a ${to}`);
     const data = await this.resend.emails.send({
-      from: "App <noreply@saberium.site>",
+      from: 'App <noreply@saberium.site>',
       to,
       subject,
       html: body,
     });
-    console.info(data)
+    console.info(data);
   }
 }
