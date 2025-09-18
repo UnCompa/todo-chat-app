@@ -1,16 +1,14 @@
+import { setupSocketIO } from '@lib/socker.io.js';
 import { apiReference } from '@scalar/express-api-reference';
 import cors from 'cors';
-import dotenv from 'dotenv';
 import express, { Request, Response } from 'express';
 import { createServer } from 'http';
 import { pinoHttp } from 'pino-http';
+import 'src/commons/config/load-env.js';
 import mainRouter from 'src/routes/api.js';
 import swaggerJSDoc from 'swagger-jsdoc';
 import { helmetConfig } from './commons/utils/helmet.js';
 import { swaggerOptions } from './commons/utils/openapi.js';
-dotenv.config({
-  override: true,
-});
 
 export const app = express();
 export const server = createServer(app);
@@ -18,6 +16,7 @@ export const server = createServer(app);
 // 🔧 Middlewares globales
 app.use(
   pinoHttp({
+    level: 'error',
     transport: {
       target: 'pino-pretty',
       options: { colorize: true },
@@ -29,8 +28,8 @@ app.use(express.json());
 
 app.use(
   cors({
-    origin: 'http://localhost:5473',
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    origin: process.env.TRUSTED_ORIGIN?.split(','),
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
     credentials: true,
   }),
 );
@@ -55,25 +54,37 @@ app.use(
     url: '/openapi.json',
   }),
 );
-
 // 🛑 Error handler (siempre al final)
-app.use(
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  (err: any, req: Request, res: Response, next: express.NextFunction) => {
-    console.info('✅ Middleware de error ejecutado');
-    const status = err.statusCode || 500;
-    const message = err.message || 'Internal Server Error';
+app.use((err: any, req: Request, res: Response, next: express.NextFunction) => {
+  console.error('🔥 Error caught in middleware:', {
+    message: err.message,
+    status: err.statusCode || 500,
+    stack: err.stack,
+    url: req.url,
+    method: req.method,
+    headersSent: res.headersSent,
+  });
 
-    res.status(status).json({
-      error: message,
-      statusCode: status,
-      name: err.name || 'Error',
-      details: err.details || null,
-    });
-  },
-);
+  // ⚠️ CRÍTICO: Verificar si ya se enviaron los headers
+  if (res.headersSent) {
+    console.warn('⚠️ Headers ya enviados, delegando al handler por defecto');
+    return next(err);
+  }
+
+  const status = err.statusCode || 500;
+  const message = err.message || 'Internal Server Error';
+
+  res.status(status).json({
+    error: message,
+    statusCode: status,
+    name: err.name || 'Error',
+    details: err.details || null,
+  });
+});
 
 // 🚀 Server start
 server.listen(3000, () => {
   console.log('🚀 Server running at http://localhost:3000');
 });
+
+export const io = setupSocketIO(server);

@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { ResponseBuilder } from 'src/commons/utils/response.js';
+import { io } from 'src/index.js';
 import { CreateCommentSchema } from './dto/create-comment.dto.js';
 import { createTaskSchema } from './dto/create-tasks.dto.js';
 import { projectTasksParamsSchema, projectTasksQuerySchema } from './dto/get-all-tasks-params.dto.js';
@@ -28,11 +29,11 @@ export const getAllTasksByProject = async (req: Request, res: Response) => {
     }
     const params = queryResult.data;
     const data = await TasksService.getAllTasksByProject(projectId, params);
-    res.status(200).json(new ResponseBuilder().setData(data.data).setPagination(data.meta));
+    return res.status(200).json(new ResponseBuilder().setData(data.data).setPagination(data.meta));
   }
 
   const data = await TasksService.getAllTasksByProject(projectId);
-  res.status(200).json(new ResponseBuilder().setData(data.data));
+  return res.status(200).json(new ResponseBuilder().setData(data.data));
 };
 
 export const createdTasks = async (req: Request, res: Response) => {
@@ -46,6 +47,7 @@ export const createdTasks = async (req: Request, res: Response) => {
   }
   const data = bodyResult.data;
   const tasks = await TasksService.createTask(data);
+  io.to(`project:${data.projectId}`).emit('task:created', tasks);
   res.status(200).json(new ResponseBuilder().setData(tasks));
 };
 
@@ -112,24 +114,39 @@ export const restoredTask = async (req: Request, res: Response) => {
   res.status(200).json(new ResponseBuilder().setMessage('Tasks restored successfully'));
 };
 export const moveTaskColumn = async (req: Request, res: Response) => {
-  const paramsResult = GetTasksDto.safeParse(req.params);
+  try {
+    const paramsResult = GetTasksDto.safeParse(req.params);
+    if (!paramsResult.success) {
+      return res.status(400).json({
+        // ← Importante el return
+        error: 'Datos inválidos',
+        details: paramsResult.error.format(),
+      });
+    }
 
-  if (!paramsResult.success) {
-    return res.status(400).json({
-      error: 'Datos inválidos',
-      details: paramsResult.error.format(),
-    });
+    const bodyResult = MoveTaskSchema.safeParse(req.body);
+    if (!bodyResult.success) {
+      return res.status(400).json({
+        // ← Importante el return
+        error: 'Datos inválidos',
+        details: bodyResult.error.format(),
+      });
+    }
+
+    const data = paramsResult.data;
+    const newTask = await TasksService.moveTask(data.id, bodyResult.data.columnId);
+    req.log.error(newTask, 'Moving Task');
+    io.to(`project:${req.project.id}`).emit('task:move', newTask);
+
+    return res.status(200).json(new ResponseBuilder().setMessage('Tasks moved successfully'));
+  } catch (error) {
+    console.error('Error in moveTaskColumn:', error);
+
+    // Solo responder si no se ha enviado ya una respuesta
+    if (!res.headersSent) {
+      return res.status(500).json({ error: 'Internal server error' });
+    }
   }
-  const bodyResult = MoveTaskSchema.safeParse(req.body);
-  if (!bodyResult.success) {
-    return res.status(400).json({
-      error: 'Datos inválidos',
-      details: bodyResult.error.format(),
-    });
-  }
-  const data = paramsResult.data;
-  await TasksService.moveTask(data.id, bodyResult.data.columnId);
-  res.status(200).json(new ResponseBuilder().setMessage('Tasks moved successfully'));
 };
 
 export const addComment = async (req: Request, res: Response) => {

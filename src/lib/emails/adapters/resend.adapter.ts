@@ -12,7 +12,7 @@ export class ResendAdapter implements EmailAdapter {
   async sendEmail(to: string, subject: string, body: string): Promise<void> {
     console.info(`Enviando email a ${to}`);
     const data = await this.resend.emails.send({
-      from: 'App <noreply@saberium.site>',
+      from: 'Saberium App <noreply@saberium.site>',
       to,
       subject,
       html: body,

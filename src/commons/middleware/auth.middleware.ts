@@ -13,8 +13,6 @@ export const requireAuth = async (req: Request, res: Response, next: NextFunctio
       headers: req.headers as any,
     });
 
-    const sessionData = session;
-    console.info(sessionData);
     if (!session) {
       return res.status(401).json({ error: 'Authentication required' });
     }

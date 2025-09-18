@@ -2,7 +2,6 @@ import { prisma } from '@lib/prisma.js';
 import { NextFunction, Request, Response } from 'express';
 export const requireOrganization = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    console.info(req.session);
     const organizationId = req.params.organizationId || req.session?.activeOrganizationId;
 
     if (!organizationId) {

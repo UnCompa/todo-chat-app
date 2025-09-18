@@ -8,6 +8,8 @@ import { ac, admin, member, owner } from './permissions.js';
 
 const prisma = new PrismaClient();
 
+const trustedOrigin = process.env.TRUSTED_ORIGIN?.split(',') || ['http://localhost:5173'];
+
 export const auth = betterAuth({
   database: prismaAdapter(prisma, {
     provider: 'postgresql',
@@ -30,12 +32,12 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
   },
+  trustedOrigins: trustedOrigin,
   plugins: [
     organization({
       async sendInvitationEmail(data) {
-        const domain = Env.BASE_DOMAIN;
-        const inviteLink = `${domain}/${data.id}`;
-        console.info(inviteLink);
+        const domain = Env.INVITE_URL;
+        const inviteLink = `${domain}?inviteId=${data.id}&email=${data.email}`;
         sendOrganizationInvitation({
           email: data.email,
           invitedByUsername: data.inviter.user.name,

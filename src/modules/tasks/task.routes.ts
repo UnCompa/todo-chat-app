@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { requireAuth } from 'src/commons/middleware/auth.middleware.js';
 import { requireOrganization } from 'src/commons/middleware/organization.middleware.js';
+import { requireProjectAccess } from 'src/commons/middleware/project.middleware.js';
 import { requireAdmin, requireMember } from 'src/commons/middleware/roles.middleware.js';
 import { catchErrors } from 'src/commons/utils/catchError.js';
 import * as taskController from './tasks.controller.js';
@@ -45,7 +46,11 @@ taskRouter.post(
   [requireAuth, requireOrganization, requireMember],
   catchErrors(taskController.restoredTask),
 );
-taskRouter.patch('/:id/move', [requireAuth, requireOrganization], catchErrors(taskController.moveTaskColumn));
+taskRouter.patch(
+  '/:id/move/:projectId',
+  [requireAuth, requireOrganization, requireMember, requireProjectAccess],
+  catchErrors(taskController.moveTaskColumn),
+);
 taskRouter.post(
   '/:id/comments',
   [requireAuth, requireOrganization, requireMember],
